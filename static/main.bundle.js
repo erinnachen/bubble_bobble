@@ -44,27 +44,205 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
+	// var Game = require('../lib/game');
 	'use strict';
 
-	var Game = __webpack_require__(1);
-	var canvas = document.getElementById('game');
-	var game = new Game(canvas);
+	var ScoreKeeper = __webpack_require__(1);
+	var GameSetup = __webpack_require__(2);
+	var Game = __webpack_require__(3);
 
-	game.play();
+	// Load high scores
+	ScoreKeeper.loadHighScores();
+	ScoreKeeper.loadHighScores2P();
+	// What happens when I click on the button?
+	GameSetup.setStartScreen(Game);
 
 /***/ },
 /* 1 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function loadHighScores() {
+	  removeAllNodes();
+	  addHighScores();
+	}
+
+	function loadHighScores2P() {
+	  removeAllNodes2P();
+	  addHighScores2P();
+	}
+
+	function removeAllNodes() {
+	  var highScoreList = document.getElementById("high-score-list");
+	  while (highScoreList.firstChild) {
+	    highScoreList.removeChild(highScoreList.firstChild);
+	  }
+	}
+
+	function removeAllNodes2P() {
+	  var highScoreList = document.getElementById("high-score-list-double");
+	  while (highScoreList.firstChild) {
+	    highScoreList.removeChild(highScoreList.firstChild);
+	  }
+	}
+
+	function addHighScores() {
+	  var highScoreList = document.getElementById("high-score-list");
+	  var scores = localStorage.getItem('high-scores');
+	  if (scores) {
+	    scores = scores.split(" ");
+	    scores.forEach(function (score) {
+	      var scoreElement = document.createElement("li");
+	      scoreElement.innerHTML = score;
+	      highScoreList.appendChild(scoreElement);
+	    });
+	  }
+	}
+
+	function addHighScores2P() {
+	  var highScoreList = document.getElementById("high-score-list-double");
+	  var scores = localStorage.getItem('high-scores-2p');
+	  if (scores) {
+	    scores = scores.split(" ");
+	    scores.forEach(function (score) {
+	      var scoreElement = document.createElement("li");
+	      scoreElement.innerHTML = score;
+	      highScoreList.appendChild(scoreElement);
+	    });
+	  }
+	}
+
+	function recordScore(game) {
+	  var scores = localStorage.getItem('high-scores');
+	  if (scores) {
+	    insertScore(scores, game.dino.points);
+	  } else {
+	    localStorage.setItem('high-scores', game.dino.points);
+	  }
+	}
+
+	function recordScore2P(game, winner) {
+	  var scores = localStorage.getItem('high-scores-2p');
+	  if (scores) {
+	    insertScore2P(scores, winner.points);
+	  } else {
+	    localStorage.setItem('high-scores-2p', winner.points);
+	  }
+	}
+
+	function insertScore(scores, score) {
+	  var scoresArr = scores.split(" ");
+	  for (var i = 0; i < scoresArr.length; i++) {
+	    if (score > scoresArr[i]) {
+	      scoresArr.splice(i, 0, score);
+	      break;
+	    }
+	  }
+	  if (score <= scoresArr[scoresArr.length - 1]) {
+	    scoresArr.push(score);
+	  }
+	  localStorage.setItem('high-scores', scoresArr.slice(0, 10).join(" "));
+	}
+
+	function insertScore2P(scores, score) {
+	  var scoresArr = scores.split(" ");
+	  for (var i = 0; i < scoresArr.length; i++) {
+	    if (score > scoresArr[i]) {
+	      scoresArr.splice(i, 0, score);
+	      break;
+	    }
+	  }
+	  if (score <= scoresArr[scoresArr.length - 1]) {
+	    scoresArr.push(score);
+	  }
+	  localStorage.setItem('high-scores-2p', scoresArr.slice(0, 10).join(" "));
+	}
+
+	module.exports.loadHighScores = loadHighScores;
+	module.exports.loadHighScores2P = loadHighScores2P;
+	module.exports.recordScore = recordScore;
+	module.exports.recordScore2P = recordScore2P;
+	module.exports.insertScore = insertScore;
+	module.exports.insertScore2P = insertScore2P;
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var Game = __webpack_require__(3);
+
+	function setStartScreen() {
+	  var startScreen = document.getElementById("start-screen");
+	  var instructionsScreen = document.getElementById("instructions-screen");
+	  var singleButtons = document.getElementsByClassName("new-single");
+	  var startButtonDoubleBubble = document.getElementById("start-double");
+	  var instructionsButton = document.getElementById("instructions");
+	  var backButton = document.getElementById("back");
+	  var themeMusic = document.getElementById("game-music");
+	  var canvas = document.getElementById('game');
+	  addNewGameListeners(singleButtons, playNewGame, canvas);
+
+	  // startButton.addEventListener('click', function(){
+	  //   startScreen.className += "hidden";
+	  //   playNewGame(canvas, 1);
+	  // });
+	  instructionsButton.addEventListener('click', function () {
+	    startScreen.className += "hidden";
+	    instructionsScreen.className = "";
+	  });
+	  backButton.addEventListener('click', function () {
+	    startScreen.className = "";
+	    instructionsScreen.className += "hidden";
+	  });
+	  startButtonDoubleBubble.addEventListener('click', function () {
+	    startScreen.className += "hidden";
+	    themeMusic.play();
+	    reset2Pgame(game);
+	    requestAnimationFrame(gameLoop2P.bind(game));
+	  });
+	}
+
+	function playNewGame(canvas, nplayers) {
+	  // themeMusic.play();
+	  var game = new Game(canvas, nplayers);
+	  game.play();
+	  // create new game (1 or 2player)
+	  // play the game
+	  // set the end screen
+	}
+
+	function addNewGameListeners(singleButtons, playNewGame, canvas) {
+	  var startScreen = document.getElementById("start-screen");
+	  for (var i = 0; i < singleButtons.length; i++) {
+	    singleButtons[i].addEventListener('click', function () {
+	      startScreen.className += "hidden";
+	      playNewGame(canvas, 1);
+	    });
+	  }
+	}
+
+	module.exports.setStartScreen = setStartScreen;
+
+/***/ },
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Dinosaur = __webpack_require__(2);
-	var Windup = __webpack_require__(5);
-	var GamePlay = __webpack_require__(6);
-	var Levels = __webpack_require__(9);
-	var ScoreKeeper = __webpack_require__(11);
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports.help = help;
+	var Dinosaur = __webpack_require__(4);
+	var Windup = __webpack_require__(7);
+	var GamePlay = __webpack_require__(8);
+	var Levels = __webpack_require__(11);
+	var ScoreKeeper = __webpack_require__(1);
 
-	function Game(canvas) {
+	function Game(canvas, nplayers) {
 	  this.canvas = canvas;
 	  this.context = canvas.getContext('2d');
 	  this.dino = new Dinosaur(this.canvas, "bob");
@@ -76,11 +254,11 @@
 
 	Game.prototype.play = function () {
 	  setKeyBindings(this);
-	  ScoreKeeper.loadHighScores();
-	  ScoreKeeper.loadHighScores2P();
-	  setStartScreen(gameLoop, gameLoop2P, this);
-	  setEndScreen(gameLoop, this);
-	  set2PEndScreens(gameLoop2P, this);
+	  this.canvas.setAttribute('width', 400);
+	  this.canvas.style["marginLeft"] = "125px";
+	  requestAnimationFrame(gameLoop.bind(this));
+	  // setEndScreen(gameLoop, this);
+	  // set2PEndScreens(gameLoop2P, this);
 	};
 
 	Game.prototype.floors = function () {
@@ -170,37 +348,37 @@
 	  }, false);
 	}
 
-	function setStartScreen(gameLoop, gameLoop2P, game) {
-	  var startScreen = document.getElementById("start-screen");
-	  var instructionsScreen = document.getElementById("instructions-screen");
-	  var startButton = document.getElementById("start");
-	  var startButtonDoubleBubble = document.getElementById("start-double");
-	  var instructionsButton = document.getElementById("instructions");
-	  var backButton = document.getElementById("back");
-	  startButton.addEventListener('click', function () {
-	    startScreen.className += "hidden";
-	    var themeMusic = document.getElementById("game-music");
-	    themeMusic.play();
-	    game.canvas.setAttribute('width', 400);
-	    game.canvas.style["marginLeft"] = "125px";
-	    requestAnimationFrame(gameLoop.bind(game));
-	  });
-	  instructionsButton.addEventListener('click', function () {
-	    startScreen.className += "hidden";
-	    instructionsScreen.className = "";
-	  });
-	  backButton.addEventListener('click', function () {
-	    startScreen.className = "";
-	    instructionsScreen.className += "hidden";
-	  });
-	  startButtonDoubleBubble.addEventListener('click', function () {
-	    startScreen.className += "hidden";
-	    var themeMusic = document.getElementById("game-music");
-	    themeMusic.play();
-	    reset2Pgame(game);
-	    requestAnimationFrame(gameLoop2P.bind(game));
-	  });
-	}
+	// export function setStartScreen(gameLoop, gameLoop2P, game) {
+	//   var startScreen = document.getElementById("start-screen");
+	//   var instructionsScreen = document.getElementById("instructions-screen");
+	//   var startButton = document.getElementById("start");
+	//   var startButtonDoubleBubble = document.getElementById("start-double");
+	//   var instructionsButton = document.getElementById("instructions");
+	//   var backButton = document.getElementById("back");
+	//   startButton.addEventListener('click', function(){
+	//     startScreen.className += "hidden";
+	//     var themeMusic  = document.getElementById("game-music");
+	//     themeMusic.play();
+	//     game.canvas.setAttribute('width', 400);
+	//     game.canvas.style["marginLeft"] = "125px";
+	//     requestAnimationFrame(gameLoop.bind(game));
+	//   });
+	//   instructionsButton.addEventListener('click', function(){
+	//     startScreen.className += "hidden";
+	//     instructionsScreen.className = "";
+	//   });
+	//   backButton.addEventListener('click', function(){
+	//     startScreen.className = "";
+	//     instructionsScreen.className += "hidden";
+	//   });
+	//   startButtonDoubleBubble.addEventListener('click', function(){
+	//     startScreen.className += "hidden";
+	//     var themeMusic  = document.getElementById("game-music");
+	//     themeMusic.play();
+	//     reset2Pgame(game);
+	//     requestAnimationFrame(gameLoop2P.bind(game));
+	//   });
+	// }
 
 	function setEndScreen(gameLoop, game) {
 	  var endScreens = document.getElementsByClassName('new-single');
@@ -283,16 +461,21 @@
 	  }
 	  return dino;
 	}
+
+	function help() {
+	  console.log("Help with stuff");
+	}
+
 	module.exports = Game;
 
 /***/ },
-/* 2 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Collision = __webpack_require__(3);
-	var Jump = __webpack_require__(4);
+	var Collision = __webpack_require__(5);
+	var Jump = __webpack_require__(6);
 
 	function Dinosaur(canvas, bubOrBob) {
 	  this.height = 25;
@@ -326,6 +509,7 @@
 	  this.jumpSize = this.jumpTotal / this.jumpSteps;
 	  this.level = 1;
 	  this.floorHeight = 10;
+	  this.jump = new Jump();
 	}
 
 	Dinosaur.prototype.reborn = function () {
@@ -403,9 +587,9 @@
 	    this.rebornTime--;
 	  }
 	  if (this.status === "jumping") {
-	    new Jump().jump(floors, this);
+	    this.jump.jump(floors, this);
 	  }
-	  if (!new Jump().onAFloor(floors, this)) {
+	  if (!this.jump.onAFloor(floors, this)) {
 	    this.y += 2;
 	  }
 	  return this;
@@ -457,7 +641,7 @@
 	module.exports = Dinosaur;
 
 /***/ },
-/* 3 */
+/* 5 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -511,12 +695,12 @@
 	}
 
 /***/ },
-/* 4 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Collision = __webpack_require__(3);
+	var Collision = __webpack_require__(5);
 
 	function Jump() {}
 
@@ -595,12 +779,12 @@
 	module.exports = Jump;
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Jump = __webpack_require__(4);
+	var Jump = __webpack_require__(6);
 
 	function Windup(canvas, dino, twoPlayer) {
 	  this.x = Math.random() * (canvas.width - 17);
@@ -620,6 +804,7 @@
 	  this.jumpSize = this.jumpTotal / this.jumpSteps;
 	  this.status = "falling";
 	  this.dino = dino;
+	  this.jump = new Jump();
 	  if (twoPlayer) {
 	    this.twoPlayer = true;
 	  }
@@ -647,7 +832,7 @@
 	  if (this.status === "falling" && this.y < this.canvas.height - this.height - this.floorHeight) {
 	    this.fall();
 	  } else if (this.status === "jumping") {
-	    new Jump().jump(floors, this);
+	    this.jump.jump(floors, this);
 	  } else if (this.x >= this.dino.x) {
 	    this.direction = "left";
 	    this.x -= this.paceRate;
@@ -656,7 +841,7 @@
 	    this.x += this.paceRate;
 	  }
 
-	  if (this.status !== "falling" && !new Jump().onAFloor(floors, this)) {
+	  if (this.status !== "falling" && !this.jump.onAFloor(floors, this)) {
 	    this.y += 2;
 	  }
 
@@ -680,7 +865,7 @@
 	module.exports = Windup;
 
 /***/ },
-/* 6 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -708,10 +893,11 @@
 	exports.endGameSequence = endGameSequence;
 	exports.endGameSequence2P = endGameSequence2P;
 	exports.decrementFruitValues = decrementFruitValues;
-	var Collision = __webpack_require__(3);
-	var Fruit = __webpack_require__(7);
-	var Windup = __webpack_require__(5);
-	var Bubble = __webpack_require__(8);
+	var Game = __webpack_require__(3);
+	var Collision = __webpack_require__(5);
+	var Fruit = __webpack_require__(9);
+	var Windup = __webpack_require__(7);
+	var Bubble = __webpack_require__(10);
 
 	function gameOver(dino, bubbles, windups, fruits) {
 	  if (dino.lives === 0 || dino.level === 3 && allFilledBubblesPopped(bubbles) && windups.length === 0 && allFruitsCollected(fruits)) {
@@ -721,6 +907,7 @@
 	}
 
 	function gameOver2P(dino, dino2) {
+	  debugger;
 	  if (dino.lives === 0 || dino2.lives === 0 || dino.points >= 10000 || dino2.points >= 10000) {
 	    return true;
 	  }
@@ -983,7 +1170,7 @@
 	}
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1034,7 +1221,7 @@
 	module.exports = Fruit;
 
 /***/ },
-/* 8 */
+/* 10 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1153,12 +1340,12 @@
 	module.exports = Bubble;
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Floor = __webpack_require__(10);
+	var Floor = __webpack_require__(12);
 
 	function Levels() {}
 
@@ -1202,7 +1389,7 @@
 	module.exports = Levels;
 
 /***/ },
-/* 10 */
+/* 12 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1222,115 +1409,6 @@
 	};
 
 	module.exports = Floor;
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	function loadHighScores() {
-	  removeAllNodes();
-	  addHighScores();
-	}
-
-	function loadHighScores2P() {
-	  removeAllNodes2P();
-	  addHighScores2P();
-	}
-
-	function removeAllNodes() {
-	  var highScoreList = document.getElementById("high-score-list");
-	  while (highScoreList.firstChild) {
-	    highScoreList.removeChild(highScoreList.firstChild);
-	  }
-	}
-
-	function removeAllNodes2P() {
-	  var highScoreList = document.getElementById("high-score-list-double");
-	  while (highScoreList.firstChild) {
-	    highScoreList.removeChild(highScoreList.firstChild);
-	  }
-	}
-
-	function addHighScores() {
-	  var highScoreList = document.getElementById("high-score-list");
-	  var scores = localStorage.getItem('high-scores');
-	  if (scores) {
-	    scores = scores.split(" ");
-	    scores.forEach(function (score) {
-	      var scoreElement = document.createElement("li");
-	      scoreElement.innerHTML = score;
-	      highScoreList.appendChild(scoreElement);
-	    });
-	  }
-	}
-
-	function addHighScores2P() {
-	  var highScoreList = document.getElementById("high-score-list-double");
-	  var scores = localStorage.getItem('high-scores-2p');
-	  if (scores) {
-	    scores = scores.split(" ");
-	    scores.forEach(function (score) {
-	      var scoreElement = document.createElement("li");
-	      scoreElement.innerHTML = score;
-	      highScoreList.appendChild(scoreElement);
-	    });
-	  }
-	}
-
-	function recordScore(game) {
-	  var scores = localStorage.getItem('high-scores');
-	  if (scores) {
-	    insertScore(scores, game.dino.points);
-	  } else {
-	    localStorage.setItem('high-scores', game.dino.points);
-	  }
-	}
-
-	function recordScore2P(game, winner) {
-	  var scores = localStorage.getItem('high-scores-2p');
-	  if (scores) {
-	    insertScore2P(scores, winner.points);
-	  } else {
-	    localStorage.setItem('high-scores-2p', winner.points);
-	  }
-	}
-
-	function insertScore(scores, score) {
-	  var scoresArr = scores.split(" ");
-	  for (var i = 0; i < scoresArr.length; i++) {
-	    if (score > scoresArr[i]) {
-	      scoresArr.splice(i, 0, score);
-	      break;
-	    }
-	  }
-	  if (score <= scoresArr[scoresArr.length - 1]) {
-	    scoresArr.push(score);
-	  }
-	  localStorage.setItem('high-scores', scoresArr.slice(0, 10).join(" "));
-	}
-
-	function insertScore2P(scores, score) {
-	  var scoresArr = scores.split(" ");
-	  for (var i = 0; i < scoresArr.length; i++) {
-	    if (score > scoresArr[i]) {
-	      scoresArr.splice(i, 0, score);
-	      break;
-	    }
-	  }
-	  if (score <= scoresArr[scoresArr.length - 1]) {
-	    scoresArr.push(score);
-	  }
-	  localStorage.setItem('high-scores-2p', scoresArr.slice(0, 10).join(" "));
-	}
-
-	module.exports.loadHighScores = loadHighScores;
-	module.exports.loadHighScores2P = loadHighScores2P;
-	module.exports.recordScore = recordScore;
-	module.exports.recordScore2P = recordScore2P;
-	module.exports.insertScore = insertScore;
-	module.exports.insertScore2P = insertScore2P;
 
 /***/ }
 /******/ ]);

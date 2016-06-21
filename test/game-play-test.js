@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var GamePlay = require('../lib/game_play');
+var GamePlay = require('../lib/game-play');
 var Dinosaur = require('../lib/dinosaur');
 var Bubble = require('../lib/bubbles');
 var Fruit = require('../lib/fruits');

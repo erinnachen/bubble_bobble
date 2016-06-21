@@ -44,3 +44,9 @@ Play the game for yourself [here](http://bubble-bobble-redux.herokuapp.com/) or 
 
 We tried to maintain the original feel of the game by keeping the characters 8bit, adding traditional background music, etc. We also maintained traditional features such as Bob's ability to jump up through a wall, but lands on top of it (cannot fall through a wall). Our version has a limited number of levels (compared to the original's 200+)   
   ** Note: Bob and Bub are dragons in the original Bubble Bobble, but they're friendly neighborhood dinosaurs in ours!
+
+### Installation
+After cloning down, this application can be run in development using the following command:
+`npm run restart`
+
+This will rebuild the code and start your node server on port 3000 by default.
